@@ -30,6 +30,7 @@ func (p *mgoRuleRepo) Create(entity model.MgoRule) error {
 
 	entity.ID = bson.NewObjectId()
 	entity.CreatedAt = time.Now().Format(time.RFC3339)
+	entity.UpdatedAt = entity.CreatedAt
 
 	collection := session.DB(_mgoDB).C(_mgoRule)
 	err := collection.Insert(&entity)

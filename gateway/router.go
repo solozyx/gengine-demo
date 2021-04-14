@@ -31,6 +31,11 @@ func BindRouter(g *gin.Engine, mw ...gin.HandlerFunc) *gin.Engine {
 		{
 			mineRouter.POST("/login", handler.MineHandler.Login())
 		}
+
+		ruleRouter := r.Group("/rule")
+		{
+			ruleRouter.POST("/food/create", handler.RuleHandler.FoodCreate())
+		}
 	}
 
 	return g

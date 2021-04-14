@@ -4,6 +4,7 @@ import "github.com/gin-gonic/gin"
 
 var (
 	MineHandler = &mineHandler{}
+	RuleHandler = &ruleHandler{}
 )
 
 // ------------------------------------------------------------------------
@@ -12,4 +13,8 @@ var (
 
 type IMineHandler interface {
 	Login() gin.HandlerFunc
+}
+
+type IRuleHandler interface {
+	FoodCreate() gin.HandlerFunc
 }
