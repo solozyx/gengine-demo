@@ -9,9 +9,9 @@ type (
 
 	RuleFoodCreateRequest struct {
 		HttpModel
-		Title     string `json:"title"`
-		OnceLimit string `json:"once_limit"`
-		DayLimit  string `json:"day_limit"`
+		Title     string  `json:"title"`
+		OnceLimit float32 `json:"once_limit"` //OnceLimit string `json:"once_limit"`
+		DayLimit  float32 `json:"day_limit"`  //DayLimit  string `json:"day_limit"`
 	}
 	RuleFoodCreateResponse struct {
 		BaseModel
