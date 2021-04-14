@@ -1,0 +1,9 @@
+Server:
+  Host: http://dev.miaozhui.com:9002
+
+Mysql:
+  Balance:
+    Host: 172.16.10.166:3306
+    User: zyx
+    Password: zyx123456
+    DataBase: zyx

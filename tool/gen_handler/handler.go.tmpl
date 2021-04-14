@@ -1,0 +1,59 @@
+/*
+ *  GENERATE BY CODE. CAN NOT EDIT!!!
+ */
+
+package handler
+
+import (
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	"net/http"
+	"gengine/service"
+	. "gengine/gateway/model"
+	"gengine/common/errno"
+)
+
+type {{ ( index .Value 0 ).StructName }}Handler struct{}
+{{range .Value}}
+func (p *{{.StructName}}Handler) {{.Name}}() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+	    var reqModel {{(print $.Key .Name)}}Request
+	    if err := ctx.Bind(&reqModel); err != nil {
+	        log.Error(err)
+            v := errno.New(errno.ErrBind, err)
+            ctx.JSON(http.StatusBadRequest, BaseModel{
+                Code: v.Code,
+                Msg:  v.Error(),
+            })
+            return
+        }
+		s := service.New{{$.Key}}Service(ctx)
+
+		reqModel.Path = ctx.Request.RequestURI
+		reqModel.Method = ctx.Request.Method
+		reqModel.IP = ctx.ClientIP()
+
+		resp, err := s.{{.Name}}(reqModel)
+		if err != nil {
+            log.Error(err)
+            if v, ok := err.(*errno.Err); ok {
+                ctx.JSON(http.StatusBadRequest, BaseModel{
+                    Code: v.Code,
+                    Msg:  v.Error(),
+                })
+                return
+            }
+
+            v := errno.New(errno.InternalServerError, err)
+            ctx.JSON(http.StatusInternalServerError, BaseModel{
+                Code: v.Code,
+                Msg:  v.Error(),
+            })
+            return
+        }
+
+        ctx.JSON(http.StatusOK, resp)
+        return
+	}
+}
+{{end}}
