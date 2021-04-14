@@ -16,4 +16,17 @@ type (
 	RuleFoodCreateResponse struct {
 		BaseModel
 	}
+
+	RuleFoodCheckRequest struct {
+		HttpModel
+		Once float32 `json:"once"`
+		Day  float32 `json:"day"`
+	}
+	RuleFoodCheckData struct {
+		Permitted bool `json:"permitted"`
+	}
+	RuleFoodCheckResponse struct {
+		BaseModel
+		Data RuleFoodCheckData `json:"data"`
+	}
 )

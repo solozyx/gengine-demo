@@ -39,3 +39,19 @@ func (p *mgoRuleRepo) Create(entity model.MgoRule) error {
 	}
 	return nil
 }
+
+func (p *mgoRuleRepo) GetLatestFoodRule() (*model.MgoRule, error) {
+	session := p.m.Copy()
+	defer session.Close()
+	collection := session.DB(_mgoDB).C(_mgoRule)
+
+	list := make([]model.MgoRule, 0)
+
+	err := collection.Find(bson.M{"rule_type": model.RuleTypeFood}).
+		Sort("-_id").Limit(1).All(&list)
+	if err != nil {
+		return nil, err
+	}
+
+	return &list[0], nil
+}

@@ -3,12 +3,16 @@ package service
 import (
 	"context"
 	"fmt"
-	"gengine/repository"
-	"gengine/repository/model"
+	"github.com/sirupsen/logrus"
 	"strings"
 
 	"gengine/common"
 	. "gengine/gateway/model"
+	"gengine/repository"
+	"gengine/repository/model"
+	"github.com/bilibili/gengine/builder"
+	genginectx "github.com/bilibili/gengine/context"
+	"github.com/bilibili/gengine/engine"
 )
 
 var (
@@ -16,7 +20,8 @@ var (
 )
 
 type IRuleService interface {
-	Create(req RuleFoodCreateRequest) (*RuleFoodCreateResponse, error)
+	FoodCreate(req RuleFoodCreateRequest) (*RuleFoodCreateResponse, error)
+	FoodCheck(req RuleFoodCheckRequest) (*RuleFoodCheckResponse, error)
 }
 
 func NewRuleService(ctx context.Context) IRuleService {
@@ -40,7 +45,7 @@ type ruleService struct {
 	UserId int
 }
 
-func (s *ruleService) Create(req RuleFoodCreateRequest) (*RuleFoodCreateResponse, error) {
+func (s *ruleService) FoodCreate(req RuleFoodCreateRequest) (*RuleFoodCreateResponse, error) {
 	title := strings.TrimSpace(req.Title)
 	// once := strings.TrimSpace(req.OnceLimit)
 	// day := strings.TrimSpace(req.DayLimit)
@@ -89,5 +94,61 @@ end
 	resp.Code = 0
 	resp.Msg = "SUCCESS"
 
+	return resp, nil
+}
+
+func (s *ruleService) FoodCheck(req RuleFoodCheckRequest) (*RuleFoodCheckResponse, error) {
+	res, err := repository.MgoRuleRepo.GetLatestFoodRule()
+	if err != nil {
+		return nil, err
+	}
+
+	// gengine
+	dataContext := genginectx.NewDataContext()
+	//dataContext.Add("println", fmt.Println)
+	dataContext.Add("println", logrus.Println)
+	//init rule engine
+	ruleBuilder := builder.NewRuleBuilder(dataContext)
+
+	//resolve rules from string
+	once := req.Once
+	day := req.Day
+	rule := res.Rule
+	logrus.Debugf("rule=%+v", rule)
+
+	if once == 0 && day == 0 {
+		rule = fmt.Sprintf(rule, 0, 0)
+	}
+
+	if once > 0 && day == 0 {
+		rule = fmt.Sprintf(rule, once, 0)
+	}
+
+	if once == 0 && day > 0 {
+		rule = fmt.Sprintf(rule, 0, day)
+	}
+
+	if once > 0 && day > 0 {
+		rule = fmt.Sprintf(rule, once, day)
+	}
+
+	logrus.Debugf("rule=%+v", rule)
+
+	err = ruleBuilder.BuildRuleFromString(rule)
+	if err != nil {
+		return nil, err
+	}
+
+	eng := engine.NewGengine()
+
+	err = eng.Execute(ruleBuilder, true)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &RuleFoodCheckResponse{}
+	resp.Code = 0
+	resp.Msg = "SUCCESS"
+	resp.Data.Permitted = true
 	return resp, nil
 }

@@ -35,6 +35,7 @@ func BindRouter(g *gin.Engine, mw ...gin.HandlerFunc) *gin.Engine {
 		ruleRouter := r.Group("/rule")
 		{
 			ruleRouter.POST("/food/create", handler.RuleHandler.FoodCreate())
+			ruleRouter.POST("/food/check", handler.RuleHandler.FoodCheck())
 		}
 	}
 

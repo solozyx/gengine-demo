@@ -17,4 +17,5 @@ type IMineHandler interface {
 
 type IRuleHandler interface {
 	FoodCreate() gin.HandlerFunc
+	FoodCheck() gin.HandlerFunc
 }
