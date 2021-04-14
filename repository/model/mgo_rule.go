@@ -6,6 +6,7 @@ import (
 
 type MgoRule struct {
 	ID        bson.ObjectId `bson:"_id" json:"id"`
+	Name      string        `bson:"name" json:"-"`                // 规则名称,非用户输入
 	Title     string        `bson:"title" json:"title"`           // 规则标题
 	Rule      string        `bson:"rule" json:"-"`                // 规则文本
 	RuleType  RuleType      `bson:"rule_type" json:"rule_type"`   // 规则类型

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/mgo.v2/bson"
 	"strings"
 
 	"gengine/common"
@@ -66,20 +67,29 @@ dayLimit = %.2f
 once = %s
 if once > onceLimit {
 	println("超过单次用餐金额限制")
+	return false 
 }
 
 day = %s
 if day > dayLimit {
 	println("超过单日用餐金额限制")
+	return false 
 }
+
+return true 
 
 end
 `
 
-	rule := fmt.Sprintf(rule_else_if_test, title, title,
+	id := bson.NewObjectId()
+	ruleName := id.Hex()
+
+	rule := fmt.Sprintf(rule_else_if_test, ruleName, title,
 		req.OnceLimit, req.DayLimit, "%.2f", "%.2f")
 
 	foodRule := model.MgoRule{
+		ID:       id,
+		Name:     ruleName,
 		Title:    title,
 		Rule:     rule,
 		RuleType: model.RuleTypeFood,
@@ -146,9 +156,21 @@ func (s *ruleService) FoodCheck(req RuleFoodCheckRequest) (*RuleFoodCheckRespons
 		return nil, err
 	}
 
+	resultMap, _ := eng.GetRulesResultMap()
+	r := resultMap[res.Name]
+
+	// a < 100时 返回int64
+	//i := r.(int64)
+
+	//a >= 100 && a < 200时 返回string
+	//i := r.(string)
+
+	//a >= 200
+	result := r.(bool)
+
 	resp := &RuleFoodCheckResponse{}
 	resp.Code = 0
 	resp.Msg = "SUCCESS"
-	resp.Data.Permitted = true
+	resp.Data.Permitted = result
 	return resp, nil
 }

@@ -28,7 +28,6 @@ func (p *mgoRuleRepo) Create(entity model.MgoRule) error {
 	session := p.m.Copy()
 	defer session.Close()
 
-	entity.ID = bson.NewObjectId()
 	entity.CreatedAt = time.Now().Format(time.RFC3339)
 	entity.UpdatedAt = entity.CreatedAt
 
