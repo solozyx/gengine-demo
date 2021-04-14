@@ -8,6 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/mgo.v2"
 
 	"gengine/common"
 )
@@ -19,21 +20,31 @@ const (
 	MysqlType_Master
 )
 
+const (
+	_mgoDB = "zyx"
+)
+
 var (
 	m           sync.RWMutex
 	mysql       *gorm.DB
 	mysqlMaster *gorm.DB
+	mgoSession  *mgo.Session
 )
 
 var (
-	NfUserRepo *userRepo
+	UserRepo *userRepo
+
+	MgoRuleRepo *mgoRuleRepo
 )
 
 func Init(cfg *common.Config) {
 	logrus.Debug("repository Init 初始化仓储")
 
 	// mysql
-	NfUserRepo = NewUserRepo(cfg)
+	UserRepo = NewUserRepo(cfg)
+
+	// mongo
+	MgoRuleRepo = NewMgoRuleRepo(cfg)
 }
 
 func connectMysql(cfg *common.Config) *gorm.DB {
@@ -96,4 +107,29 @@ func GetMysqlDB(cfg *common.Config, t mysqlType) *gorm.DB {
 		return mysqlMaster
 	}
 	return nil
+}
+
+func GetMgoSession(cfg *common.Config) *mgo.Session {
+	if mgoSession == nil {
+		m.Lock()
+		defer m.Unlock()
+		if mgoSession == nil {
+			mgoSession = connectMongo(cfg)
+		}
+	}
+	return mgoSession
+}
+
+func connectMongo(cfg *common.Config) *mgo.Session {
+	s, err := mgo.DialWithInfo(&mgo.DialInfo{
+		Addrs:     cfg.Mongo.Hosts,
+		Database:  "",
+		Username:  cfg.Mongo.User,
+		Password:  cfg.Mongo.Password,
+		PoolLimit: 10480,
+	})
+	if err != nil {
+		panic(err)
+	}
+	return s
 }

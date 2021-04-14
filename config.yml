@@ -7,3 +7,9 @@ Mysql:
     User: zyx
     Password: zyx123456
     DataBase: zyx
+
+Mongo:
+  Hosts:
+    - 172.16.10.166:27017
+  User: ""
+  Password: ""
